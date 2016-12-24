@@ -1,0 +1,17 @@
+.lazy-image {
+  position: relative;
+  overflow: hidden;
+  max-width: 100%;
+  margin-bottom: 1rem;
+  background: whitesmoke;
+}
+
+.lazy-image > img {
+  position: absolute;
+  opacity: 0;
+  transition: 0.5s ease-in-out;
+}
+
+img {
+  max-width: 100%;
+}
