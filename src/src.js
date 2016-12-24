@@ -1,41 +1,61 @@
-((window, document, $) => {
-  $(document).ready(() => {
-    const lazyLoadImage = (src, image, callback) => {
-      const pos = $(image)[0].getBoundingClientRect();
-      if (pos.top < window.innerHeight) {
-        $(image)
-        .attr('src', src)
-        .on('load', e => {
-          $(e.target).css({
-            opacity: '1',
-          });
-        });
-        if (callback) $(document).off('scroll', callback);
-      }
-    };
+((w, d) => {
+  const loadImage = imageObj => {
+    const image = imageObj.element;
+    image.setAttribute('src', imageObj.src);
+    image.addEventListener('load', () => {
+      image.style.opacity = '1';
+    });
+  };
+  const wrapElementWith = (reference, element) => {
+    const DOMReference = reference.parentNode.insertBefore(element, reference);
+    DOMReference.appendChild(reference);
+  };
 
-    const lazyLoad = selector => {
-      $(selector).each((i, image) => {
-        const src = $(image).attr('data-src');
-        const ratio = $(image).attr('ratio').split('x');
-        const aspectRatio = parseInt(ratio[1], 10) / parseInt(ratio[0], 10);
-        $(image)
-        .wrap($('<div/>', {
-          class: 'lazy-image',
-          css: {
-            paddingBottom: `${aspectRatio}%`,
-          },
-        }));
-        const pos = $(image).parent()[0].getBoundingClientRect();
-        if (pos.top < window.innerHeight) {
-          lazyLoadImage(src, image);
-        } else {
-          $(document).on('scroll', function lazyScrollHandlers() {
-            lazyLoadImage(src, image, lazyScrollHandlers);
-          });
+  const generateImagesToLazyLoad = (selector, triggerOffset) => {
+    const imagesToLazyLoad = [];
+
+    [].forEach.call(d.querySelectorAll(selector), image => {
+      const src = image.getAttribute('data-src');
+      const ratio = image.getAttribute('ratio').split('x');
+      const aspectRatio = (parseInt(ratio[1], 10) / parseInt(ratio[0], 10)) * 100;
+      const lazyImageContainer = d.createElement('div');
+      lazyImageContainer.classList.add('lazy-image');
+      lazyImageContainer.style.paddingBottom = `${aspectRatio}%`;
+      wrapElementWith(image, lazyImageContainer);
+      const imageObj = {
+        element: image,
+        offset: image.parentNode.getBoundingClientRect(),
+        src,
+      };
+      if (imageObj.offset.top < w.innerHeight + triggerOffset) {
+        loadImage(imageObj);
+      } else {
+        imagesToLazyLoad.push(imageObj);
+      }
+    });
+
+    return imagesToLazyLoad;
+  };
+
+  const lazyLoad = (selector = 'img', triggerOffset = 0) => {
+    const imagesQueue = generateImagesToLazyLoad(selector, triggerOffset);
+
+    d.addEventListener('scroll', function imagesScrollListener() {
+      if (imagesQueue.length === 0) {
+        d.removeEventListener('scroll', imagesScrollListener);
+      }
+      imagesQueue.forEach(image => {
+        if ((w.innerHeight + w.pageYOffset) + triggerOffset > image.offset.top) {
+          loadImage(image);
+          imagesQueue.splice(imagesQueue.indexOf(image), 1);
         }
       });
-    };
-    window.lazyLoad = lazyLoad;
+    });
+  };
+
+  w.lazyLoad = lazyLoad; //eslint-disable-line
+
+  w.addEventListener('beforeunload', () => {
+    w.scrollTo(0, 0);
   });
-})(window, document, $);
+})(window, document);
