@@ -1,4 +1,4 @@
-($ => {
+((window, document, $) => {
   $(document).ready(() => {
     const lazyLoadImage = (src, image, callback) => {
       const pos = $(image)[0].getBoundingClientRect();
@@ -14,33 +14,28 @@
       }
     };
 
-    $('img').each((i, image) => {
-      const src = $(image).attr('data-src');
-      const ratio = $(image).attr('ratio');
-      const aspectRatio = {
-        '16x9': 56.25,
-        '4x3': 75,
-        '6x4': 66.6,
-        '8x5': 62.5,
-        '7x5': 71.42,
-        '1x1': 100,
-      };
-      $(image)
-        .attr('src', '')
+    const lazyLoad = selector => {
+      $(selector).each((i, image) => {
+        const src = $(image).attr('data-src');
+        const ratio = $(image).attr('ratio').split('x');
+        const aspectRatio = parseInt(ratio[1], 10) / parseInt(ratio[0], 10);
+        $(image)
         .wrap($('<div/>', {
           class: 'lazy-image',
           css: {
-            paddingBottom: `${aspectRatio[ratio]}%`,
+            paddingBottom: `${aspectRatio}%`,
           },
         }));
-      const pos = $(image).parent()[0].getBoundingClientRect();
-      if (pos.top < window.innerHeight) {
-        lazyLoadImage(src, image);
-      } else {
-        $(document).on('scroll', function lazyScrollHandlers() {
-          lazyLoadImage(src, image, lazyScrollHandlers);
-        });
-      }
-    });
+        const pos = $(image).parent()[0].getBoundingClientRect();
+        if (pos.top < window.innerHeight) {
+          lazyLoadImage(src, image);
+        } else {
+          $(document).on('scroll', function lazyScrollHandlers() {
+            lazyLoadImage(src, image, lazyScrollHandlers);
+          });
+        }
+      });
+    };
+    window.lazyLoad = lazyLoad;
   });
-})($);
+})(window, document, $);
