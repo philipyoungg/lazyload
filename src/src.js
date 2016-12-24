@@ -31,7 +31,7 @@
         image,
         src,
       };
-      if (image.getBoundingClientRect().top - w.innerHeight < 0) {
+      if (image.getBoundingClientRect().top < w.innerHeight) {
         loadImage(imageObj);
       } else {
         imagesToLazyLoad.push(imageObj);
@@ -50,7 +50,7 @@
       }
       imagesQueue.forEach(imageObj => {
         const { image } = imageObj;
-        if (image.getBoundingClientRect().top - w.innerHeight < triggerOffset) {
+        if (image.getBoundingClientRect().top < w.innerHeight + triggerOffset) {
           loadImage(imageObj);
           imagesQueue.splice(imagesQueue.indexOf(imageObj), 1);
         }
