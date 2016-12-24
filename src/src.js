@@ -8,8 +8,8 @@
   };
 
   const wrapElementWith = (reference, element) => {
-    const DOMReference = reference.parentNode.insertBefore(element, reference);
-    DOMReference.appendChild(reference);
+    const DOMElement = reference.parentNode.insertBefore(element, reference);
+    DOMElement.appendChild(reference);
   };
 
   const generateImagesToLazyLoad = selector => {
