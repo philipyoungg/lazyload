@@ -1,7 +1,7 @@
 ((w, d) => {
   const loadImage = imageObj => {
-    const image = imageObj.element;
-    image.setAttribute('src', imageObj.src);
+    const { image, src } = imageObj;
+    image.setAttribute('src', src);
     image.addEventListener('load', () => {
       image.style.opacity = '1';
     });
@@ -28,11 +28,10 @@
       const src = image.getAttribute('data-src');
       wrapImageWithLazyContainer(image);
       const imageObj = {
-        element: image,
-        offset: image.parentNode.getBoundingClientRect(),
+        image,
         src,
       };
-      if (imageObj.offset.top < w.innerHeight) {
+      if (image.parentNode.getBoundingClientRect().top - w.innerHeight < 0) {
         loadImage(imageObj);
       } else {
         imagesToLazyLoad.push(imageObj);
@@ -49,10 +48,11 @@
       if (imagesQueue.length === 0) {
         d.removeEventListener('scroll', imagesScrollListener);
       }
-      imagesQueue.forEach(image => {
-        if ((w.innerHeight + w.pageYOffset) + triggerOffset > image.offset.top) {
-          loadImage(image);
-          imagesQueue.splice(imagesQueue.indexOf(image), 1);
+      imagesQueue.forEach(imageObj => {
+        const { image } = imageObj;
+        if (image.parentNode.getBoundingClientRect().top - w.innerHeight < triggerOffset) {
+          loadImage(imageObj);
+          imagesQueue.splice(imagesQueue.indexOf(imageObj), 1);
         }
       });
     });
