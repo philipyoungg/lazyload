@@ -12,17 +12,21 @@
     DOMElement.appendChild(reference);
   };
 
+  const wrapImageWithLazyContainer = image => {
+    const ratio = image.getAttribute('ratio').split('x');
+    const aspectRatio = (parseInt(ratio[1], 10) / parseInt(ratio[0], 10)) * 100;
+    const lazyImageContainer = d.createElement('div');
+    lazyImageContainer.classList.add('lazy-image');
+    lazyImageContainer.style.paddingBottom = `${aspectRatio}%`;
+    wrapElementWith(image, lazyImageContainer);
+  };
+
   const generateImagesToLazyLoad = selector => {
     const imagesToLazyLoad = [];
 
     [].forEach.call(d.querySelectorAll(selector), image => {
       const src = image.getAttribute('data-src');
-      const ratio = image.getAttribute('ratio').split('x');
-      const aspectRatio = (parseInt(ratio[1], 10) / parseInt(ratio[0], 10)) * 100;
-      const lazyImageContainer = d.createElement('div');
-      lazyImageContainer.classList.add('lazy-image');
-      lazyImageContainer.style.paddingBottom = `${aspectRatio}%`;
-      wrapElementWith(image, lazyImageContainer);
+      wrapImageWithLazyContainer(image);
       const imageObj = {
         element: image,
         offset: image.parentNode.getBoundingClientRect(),
