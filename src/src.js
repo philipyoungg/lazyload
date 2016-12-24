@@ -6,12 +6,13 @@
       image.style.opacity = '1';
     });
   };
+
   const wrapElementWith = (reference, element) => {
     const DOMReference = reference.parentNode.insertBefore(element, reference);
     DOMReference.appendChild(reference);
   };
 
-  const generateImagesToLazyLoad = (selector, triggerOffset) => {
+  const generateImagesToLazyLoad = selector => {
     const imagesToLazyLoad = [];
 
     [].forEach.call(d.querySelectorAll(selector), image => {
@@ -27,7 +28,7 @@
         offset: image.parentNode.getBoundingClientRect(),
         src,
       };
-      if (imageObj.offset.top < w.innerHeight + triggerOffset) {
+      if (imageObj.offset.top < w.innerHeight) {
         loadImage(imageObj);
       } else {
         imagesToLazyLoad.push(imageObj);
@@ -38,7 +39,7 @@
   };
 
   const lazyLoad = (selector = 'img', triggerOffset = 0) => {
-    const imagesQueue = generateImagesToLazyLoad(selector, triggerOffset);
+    const imagesQueue = generateImagesToLazyLoad(selector);
 
     d.addEventListener('scroll', function imagesScrollListener() {
       if (imagesQueue.length === 0) {
