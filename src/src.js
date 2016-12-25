@@ -31,7 +31,8 @@
         image,
         src,
       };
-      if (image.getBoundingClientRect().top < w.innerHeight) {
+      const offset = image.parentNode.getBoundingClientRect();
+      if (offset.top < w.innerHeight) {
         loadImage(imageObj);
       } else {
         imagesToLazyLoad.push(imageObj);
@@ -43,24 +44,26 @@
 
   const lazyLoad = (selector = 'img', triggerOffset = 0) => {
     const imagesQueue = generateImagesToLazyLoad(selector);
-
+    let loadedCount = 0;
     d.addEventListener('scroll', function imagesScrollListener() {
-      if (imagesQueue.length === 0) {
+      if (loadedCount === imagesQueue.length) {
         d.removeEventListener('scroll', imagesScrollListener);
       }
-      imagesQueue.forEach(imageObj => {
-        const { image } = imageObj;
-        if (image.getBoundingClientRect().top < w.innerHeight + triggerOffset) {
-          loadImage(imageObj);
-          imagesQueue.splice(imagesQueue.indexOf(imageObj), 1);
+      imagesQueue.forEach((imageObj, index) => {
+        if (imageObj) {
+          const { image } = imageObj;
+          const offset = image.parentNode.getBoundingClientRect();
+          if (offset.top < w.innerHeight + triggerOffset &&
+              offset.bottom + offset.height + triggerOffset > 0
+          ) {
+            loadImage(imageObj);
+            imagesQueue[index] = null;
+            loadedCount += 1;
+          }
         }
       });
     });
   };
 
   w.lazyLoad = lazyLoad; //eslint-disable-line
-
-  w.addEventListener('beforeunload', () => {
-    w.scrollTo(0, 0);
-  });
 })(window, document);
